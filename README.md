@@ -1,41 +1,90 @@
-# singlecelltype-xgboost-classifier
-XGBoost-Based Cell Type Classification Pipeline
+# 🧬 SingleCellType-XGBoost-Classifier  
+**An XGBoost-based pipeline for cell type classification in single-cell RNA-seq data**
 
-About the data: I used a glioblastoma scRNA-seq atlas composed of 307k cells (samples) and 13112 genes (features). The cells are classified with 6 classes: tumor cells,
-myeloid cells, lymphoid cells, oligodendrocytes, mesenchymal cells and endothelial cells. Counts are log1p normalized (to 10000) and scaled to mean = 0 and sd = 1.
+---
 
-Step 1 - Initial Hyperparameter Optimization (01_Pipeline_Step_1.ipynb):
-First, 20% of samples were assigned to the test group and the remaining 80% were assigned to calibrate hyperparameters.
-Next, I encoded the labels and performed an initial randomized hyperparameter search using XGBoost with cross-validation to find the best combination of learning rate, 
-max depth, and number of estimators.
-The initial 20 iterations of RandomizedSearchCV yielded the following optimal hyperparameters: learning_rate = 0.2296, max_depth = 7, and n_estimators = 70. 
-These parameters were applied to an initial classification test, which produced remarkably high performance metrics: an accuracy of 98.8%, precision of 98.5%, 
-recall of 98.3%, and an F1-score of 98.3%.
+## 📘 Overview
+This project implements a **cell type classification pipeline** using **XGBoost** on a large-scale **glioblastoma single-cell RNA-seq (scRNA-seq) atlas**.  
+The dataset comprises **307k cells (samples)** and **13,112 genes (features)**, annotated into six distinct cell types:
 
-Step 2 - 20-fold validation (02_Pipeline_Step_2.ipynb):
-To validate these results, 20-fold validation was conducted. To account for class unbalance, in each of the 20 rounds the samples were subsetted to 2000 samples 
-per class, divided in a 70/30 manne. This hyperparameter combination demonstrated consistent performance across all folds, with mean metrics as follows: 
-Precision = 98.3% ± 0.002%, Recall = 98.3% ± 0.002%, and F1-score = 98.3% ± 0.002%.
+- Tumor cells  
+- Myeloid cells  
+- Lymphoid cells  
+- Oligodendrocytes  
+- Mesenchymal cells  
+- Endothelial cells  
 
-Step 3 - Feature selection (03_Pipeline_Step_3.ipynb):
-In order to simplify the model and allow for exploration of more hyperparameters, I order features using the built-in XGBoost feature_importance function and tested
-the performance of the model as features were removed. In each round I removed half of the features and tested metrics in 20-folds like in the previous step. This way,
-I reduced the initial 13112 features to 102 features that still achieved a high performance. With 51 features, all metrics droped to ~96%.
+All counts were **log₁₊ normalized (to 10,000)** and **scaled** (mean = 0, SD = 1).
+
+---
+
+## ⚙️ Pipeline Overview
+
+### **Step 1 — Initial Hyperparameter Optimization**  
+📓 *Notebook: `01_Pipeline_Step_1.ipynb`*
+
+- **Data split:** 80% for training (hyperparameter tuning) and 20% for testing.  
+- **Label encoding:** Performed prior to model training.  
+- **Method:** Randomized hyperparameter search using XGBoost with cross-validation.  
+- **Parameters optimized:** `learning_rate`, `max_depth`, `n_estimators`.  
+- **Best combination (after 20 iterations):**
+  - `learning_rate = 0.2296`
+  - `max_depth = 7`
+  - `n_estimators = 70`
+- **Initial test results:**
+  - Accuracy: **98.8%**  
+  - Precision: **98.5%**  
+  - Recall: **98.3%**  
+  - F1-score: **98.3%**
+
+---
+
+### **Step 2 — 20-Fold Validation**  
+📓 *Notebook: `02_Pipeline_Step_2.ipynb`*
+
+- **Goal:** Validate model robustness and address class imbalance.  
+- **Approach:**  
+  - Each round used 2,000 samples per class (balanced subsets).  
+  - Data split: 70% training / 30% validation.  
+- **Results (mean ± SD across 20 folds):**
+  - Precision: **98.3% ± 0.002%**  
+  - Recall: **98.3% ± 0.002%**  
+  - F1-score: **98.3% ± 0.002%**
+
+---
+
+### **Step 3 — Feature Selection**  
+📓 *Notebook: `03_Pipeline_Step_3.ipynb`*
+
+- **Objective:** Simplify the model while maintaining high performance.  
+- **Method:**  
+  - Ranked features using XGBoost’s `feature_importance_`.  
+  - Iteratively removed half of the least important features per round.  
+  - Each iteration evaluated with 20-fold validation.  
+- **Findings:**  
+  - Performance remained stable down to **102 features**.  
+  - Further reduction to **51 features** dropped all metrics to ~96%.
+
+---
+
+### **Step 4 — Extended Hyperparameter Optimization**  
+📓 *Notebook: `04_Pipeline_Step_4.ipynb`*
+
+- **Goal:** Explore additional XGBoost hyperparameters with reduced feature set.  
+- **Additional parameters tested:**  
+  - `subsample`, `colsample_bytree`, `gamma`,  
+    `min_child_weight`, `reg_alpha`, `reg_lambda`  
+- **Method:** Randomized search with 3-fold cross-validation.  
+- **Outcome:**  
+  - No combination surpassed the original hyperparameters.  
+  - Indicates performance saturation due to dataset noise and intrinsic biological variability.
 
 
+---
 
+## 🧩 Conclusions
+- The XGBoost classifier achieved **remarkably high and stable performance** in identifying cell types across a large scRNA-seq dataset.  
+- **Feature importance ranking** proved highly effective for dimensionality reduction, maintaining accuracy with as few as 102 genes.  
+- Further hyperparameter optimization showed **diminishing returns**, suggesting the model had reached near-optimal performance within the data’s inherent noise limits.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+---
